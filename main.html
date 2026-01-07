@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stone Science | IKS Project</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+    <style>
+        /* LIGHT THEME BASE */
+        body { font-family: 'Inter', sans-serif; background-color: #fafaf9; color: #1c1917; overflow-x: hidden; } /* bg-stone-50 text-stone-900 */
+        h1, h2, h3, h4, h5 { font-family: 'Space Grotesk', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Reveal Animation */
+        .reveal { opacity: 1; transform: translateY(0); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .js-loaded .reveal { opacity: 0; transform: translateY(40px); }
+        .js-loaded .reveal.active { opacity: 1; transform: translateY(0); }
+        
+        /* Glassmorphism - LIGHT MODE */
+        .glass { 
+            background: rgba(255, 255, 255, 0.7); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(0, 0, 0, 0.05); 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .glass-panel { 
+            background: #ffffff; 
+            border: 1px solid #e7e5e4; /* stone-200 */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Map Styles - Light */
+        .leaflet-popup-content-wrapper { background: #ffffff; color: #1c1917; border-radius: 8px; font-family: 'JetBrains Mono', monospace; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #e5e5e5; }
+        .leaflet-popup-tip { background: #ffffff; }
+        .leaflet-container { font-family: 'Inter', sans-serif; background: #f5f5f4; }
+        
+        /* Marker Pulses */
+        @keyframes pulse-yellow {
+            0% { transform: translate(-50%, -50%) scale(0.9); box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4); }
+            70% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 0 10px rgba(217, 119, 6, 0); }
+            100% { transform: translate(-50%, -50%) scale(0.9); box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); }
+        }
+        .marker-pin-yellow { width: 16px; height: 16px; border-radius: 50%; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.7); animation: pulse-yellow 2s infinite; background: #d97706; border: 2px solid white; }
+        
+        @keyframes pulse-red {
+            0% { transform: translate(-50%, -50%) scale(0.9); box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.4); }
+            70% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 0 10px rgba(185, 28, 28, 0); }
+            100% { transform: translate(-50%, -50%) scale(0.9); box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+        .marker-pin-red { width: 16px; height: 16px; border-radius: 50%; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); animation: pulse-red 2s infinite; background: #b91c1c; border: 2px solid white; }
+
+        /* Slider - Light Theme */
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: #b91c1c; border: 3px solid #ffffff; cursor: pointer; margin-top: -10px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #e5e5e5; border-radius: 4px; }
+
+        /* Map Fix */
+        .leaflet-container img.leaflet-tile { max-width: none !important; width: auto !important; }
+    </style>
+</head>
+<body class="antialiased selection:bg-amber-200 selection:text-amber-900">
+
+    <header class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-stone-50">
+        <div class="absolute inset-0 z-0 opacity-[0.03]" 
+             style="background-image: linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px); background-size: 40px 40px;">
+        </div>
+        
+        <div class="z-10 text-center px-4 max-w-5xl mx-auto pt-20">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-200 bg-amber-50 text-amber-700 text-[10px] font-mono uppercase tracking-widest mb-8 reveal shadow-sm">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></span>
+                Indian Knowledge Systems • Section 3,4,5
+            </div>
+            <h1 class="text-6xl md:text-[9rem] leading-none font-bold tracking-tighter mb-8 text-stone-900 reveal drop-shadow-sm">
+                STONE<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-red-700">SCIENCE</span>
+            </h1>
+            <p class="text-stone-500 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed reveal font-light">
+                Engineering the Divine: From the polymer-like properties of Soapstone to the calculus of the stars.
+            </p>
+        </div>
+        
+        <div class="absolute bottom-10 animate-bounce opacity-40">
+            <i data-lucide="arrow-down" class="text-stone-900 w-6 h-6"></i>
+        </div>
+    </header>
+
+    <main>
+        <section class="py-32 px-6 bg-white border-t border-stone-200">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid md:grid-cols-2 gap-16 items-start">
+                    <div class="reveal">
+                        <span class="text-amber-600 font-mono text-xs uppercase tracking-widest font-bold">01 • Material Science</span>
+                        <h2 class="text-5xl font-bold mt-4 mb-8 text-stone-900">The Polymer of the Past</h2>
+                        <p class="text-stone-600 text-lg leading-relaxed mb-8">
+                            Hoysala architects abandoned hard granite for <strong>Chloritic Schist</strong> (Soapstone). This material behaves like a modern polymer: soft when quarried, allowing for "lace-like" carvings, but chemically hardening upon exposure to the atmosphere to become durable as steel.
+                        </p>
+                        
+                        <div class="glass-panel rounded-2xl p-6 mt-8">
+                            <h4 class="text-xs font-bold uppercase tracking-widest text-red-600 mb-4 border-b border-stone-100 pb-2">Lithic Comparison</h4>
+                            <div class="grid grid-cols-3 gap-4 text-sm font-mono text-stone-500">
+                                <div class="text-stone-400">Property</div>
+                                <div class="text-stone-900 font-bold">Granite</div>
+                                <div class="text-amber-600 font-bold">Soapstone</div>
+                                
+                                <div>Hardness</div>
+                                <div>6-7 (Hard)</div>
+                                <div>1-2 (Soft)</div>
+                                
+                                <div>Detailing</div>
+                                <div>Low Res</div>
+                                <div>High Precision</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass aspect-square rounded-3xl flex items-center justify-center relative reveal p-8 border border-stone-100 bg-stone-50">
+                        <div class="relative z-10 text-center">
+                            <div class="w-24 h-24 bg-stone-200 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                                <i data-lucide="layers" class="w-10 h-10 text-stone-500 stroke-1"></i>
+                            </div>
+                            <div class="text-xs font-mono text-red-500 uppercase font-bold">Chemical Process</div>
+                            <div class="text-2xl font-bold text-stone-900 mt-2">Atmospheric Curing</div>
+                            <p class="text-xs text-stone-400 mt-2">Surface oxidation locks in details</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-32 px-6 bg-stone-50 border-t border-stone-200">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-20 reveal">
+                    <span class="text-red-600 font-mono text-xs uppercase tracking-widest font-bold">02 • Structural Engineering</span>
+                    <h2 class="text-4xl md:text-5xl font-bold mt-4 text-stone-900">The Ancient CAD System</h2>
+                    <p class="text-stone-500 mt-4 max-w-2xl mx-auto">Vastu Shastra functioned as an algorithmic grid for load distribution and environmental alignment.</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="glass-panel p-8 rounded-3xl relative overflow-hidden group reveal hover:-translate-y-2 transition-transform duration-300">
+                        <div class="absolute top-0 right-0 p-6 opacity-10"><i data-lucide="grid" class="w-12 h-12 text-amber-600"></i></div>
+                        <h3 class="text-xl font-bold mb-2 text-stone-900">The 8x8 Modulus</h3>
+                        <p class="text-sm text-stone-500 leading-relaxed mb-6">
+                            The <em>Vastu Purusha Mandala</em> was a rigorous grid (8x8 or 9x9) acting as a modular framework. It aligned cardinal axes to solar movement.
+                        </p>
+                        <div class="w-full aspect-square border border-amber-100 rounded-lg grid grid-cols-8 grid-rows-8 gap-px bg-amber-50">
+                            <script>for(let i=0;i<64;i++) document.write(`<div class="bg-amber-100/50"></div>`)</script>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-8 rounded-3xl relative overflow-hidden group reveal hover:-translate-y-2 transition-transform duration-300" style="transition-delay: 100ms">
+                        <div class="absolute top-0 right-0 p-6 opacity-10"><i data-lucide="triangle" class="w-12 h-12 text-red-600"></i></div>
+                        <h3 class="text-xl font-bold mb-2 text-stone-900">Recursive Geometry</h3>
+                        <p class="text-sm text-stone-500 leading-relaxed mb-6">
+                            Temples utilized "self-similar" fractal patterns. The smallest shrine unit is scaled up to form the massive tower.
+                        </p>
+                        <div class="flex items-center justify-center h-48 border border-red-100 rounded-lg bg-red-50">
+                             <div class="text-center">
+                                 <div class="text-4xl font-bold text-red-600">1 : 1.4</div>
+                                 <div class="text-[10px] uppercase tracking-widest text-red-400 mt-1">Surface Area Expansion</div>
+                             </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-8 rounded-3xl relative overflow-hidden group reveal hover:-translate-y-2 transition-transform duration-300" style="transition-delay: 200ms">
+                        <div class="absolute top-0 right-0 p-6 opacity-10"><i data-lucide="activity" class="w-12 h-12 text-stone-900"></i></div>
+                        <h3 class="text-xl font-bold mb-2 text-stone-900">Base Isolation</h3>
+                        <p class="text-sm text-stone-500 leading-relaxed mb-6">
+                            The temple sits on a raised platform (<em>Jagati</em>) which acts as a shock absorber. "Dry Masonry" allows vibration without cracking.
+                        </p>
+                        <div class="mt-4 border-t border-dashed border-stone-200 pt-4">
+                            <div class="flex justify-between items-center text-xs font-mono">
+                                <span class="text-stone-400">Mortar Used</span>
+                                <span class="text-stone-900 font-bold">0% (Zero)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-32 px-6 bg-white border-t border-stone-200">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid md:grid-cols-2 gap-16 items-center">
+                    <div class="order-2 md:order-1 relative h-[500px] bg-stone-100 rounded-3xl overflow-hidden shadow-inner reveal">
+                        <div class="absolute inset-0 flex flex-col justify-between p-8">
+                            <div class="w-full h-2 bg-cyan-200 rounded-full opacity-30 animate-pulse"></div>
+                            <div class="w-full h-2 bg-cyan-300 rounded-full opacity-40 animate-pulse" style="animation-delay: 0.2s"></div>
+                            <div class="w-full h-2 bg-cyan-400 rounded-full opacity-50 animate-pulse" style="animation-delay: 0.4s"></div>
+                            <div class="w-full h-2 bg-cyan-500 rounded-full opacity-60 animate-pulse" style="animation-delay: 0.6s"></div>
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i data-lucide="droplets" class="w-32 h-32 text-cyan-600 opacity-20"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="order-1 md:order-2 reveal">
+                        <span class="text-cyan-600 font-mono text-xs uppercase tracking-widest font-bold">03 • Civil Engineering</span>
+                        <h2 class="text-4xl md:text-5xl font-bold mt-4 mb-8 text-stone-900">Hydraulic Supremacy</h2>
+                        <p class="text-stone-600 text-lg leading-relaxed mb-8">
+                            The Vijayanagara Empire (Hampi) mastered water management in an arid landscape. They constructed a vast network of <strong>gravity-fed canals</strong>, syphons, and aqueducts to transport water from the Tungabhadra River.
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                                <div class="p-3 bg-cyan-50 rounded-lg text-cyan-600"><i data-lucide="waves" class="w-5 h-5"></i></div>
+                                <div>
+                                    <h5 class="font-bold text-stone-900">Pushkaranis (Stepped Tanks)</h5>
+                                    <p class="text-xs text-stone-500">Inverted pyramidal geometry using zero mortar.</p>
+                                </div>
+                            </div>
+                            <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                                <div class="p-3 bg-cyan-50 rounded-lg text-cyan-600"><i data-lucide="filter" class="w-5 h-5"></i></div>
+                                <div>
+                                    <h5 class="font-bold text-stone-900">Filtration Systems</h5>
+                                    <p class="text-xs text-stone-500">Lacustrine movement used to filter water naturally.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-32 px-6 bg-stone-50 border-t border-stone-200 select-none relative overflow-hidden">
+            <div class="max-w-3xl mx-auto relative z-10 text-center">
+                <span class="text-amber-600 text-xs font-mono uppercase tracking-widest mb-4 block font-bold">Interactive Simulation</span>
+                <h3 class="text-4xl font-bold mb-6 text-stone-900">The Lathe-Turned Pillar</h3>
+                <p class="text-stone-500 mb-12 text-sm max-w-lg mx-auto">
+                    Drag the slider to spin and polish the stone. Hoysala pillars exhibit perfect rotational symmetry, impossible by hand.
+                </p>
+
+                <div class="glass-panel rounded-3xl p-12 max-w-lg mx-auto relative">
+                    <div class="relative w-56 h-56 mx-auto flex items-center justify-center mb-10">
+                        <div id="latheStone" class="w-40 h-40 bg-stone-400 rounded-[35%] relative overflow-hidden transition-all duration-75 ease-linear shadow-inner border border-stone-300">
+                            <div class="absolute inset-0 opacity-10 bg-[repeating-linear-gradient(90deg,transparent,transparent_2px,#000_2px,#000_4px)]"></div>
+                            <div id="latheShine" class="absolute inset-0 opacity-0 bg-gradient-to-tr from-transparent via-white/80 to-transparent transition-opacity duration-500"></div>
+                        </div>
+                        <div class="absolute -right-4 top-1/2 -translate-y-1/2 w-16 h-6 bg-stone-800 rounded-l-full shadow-lg z-10"></div>
+                    </div>
+
+                    <div class="relative z-20">
+                        <div class="flex justify-between text-[10px] font-mono text-stone-400 mb-4 uppercase tracking-wider">
+                            <span>Rough Block</span>
+                            <span id="rpmLabel" class="text-amber-600 font-bold">0 RPM</span>
+                            <span>Polished Finish</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="0" id="latheSlider" class="w-full">
+                    </div>
+                    
+                    <div id="latheSuccess" class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm rounded-3xl opacity-0 pointer-events-none transition-opacity duration-500 z-30">
+                        <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4 text-green-600 shadow-sm">
+                            <i data-lucide="check" class="w-8 h-8"></i>
+                        </div>
+                        <h4 class="text-xl font-bold text-stone-900">Symmetry Achieved</h4>
+                        <p class="text-xs text-stone-500 font-mono mt-2">Precision: Industrial Grade</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-32 px-6 bg-white border-t border-stone-200">
+            <div class="max-w-5xl mx-auto">
+                <div class="flex flex-col md:flex-row gap-12 items-center mb-16 reveal">
+                    <div class="md:w-1/2">
+                        <span class="text-red-600 font-mono text-xs uppercase tracking-widest font-bold">05 • Information Technology</span>
+                        <h2 class="text-4xl font-bold mt-4 mb-6 text-stone-900">The Ancient "Cloud" Server</h2>
+                        <p class="text-stone-600 text-sm leading-relaxed">
+                            The Jain Basadis of Moodabidri functioned as data centers. They engineered <strong>Talegari</strong> (processed palm leaves), creating archival material that resisted rot and termites for centuries.
+                        </p>
+                    </div>
+                    <div class="md:w-1/2 grid grid-cols-2 gap-4">
+                        <div class="glass-panel p-4 rounded-xl text-center border-amber-200 bg-amber-50">
+                            <div class="text-3xl font-bold text-amber-600 mb-1">500+</div>
+                            <div class="text-[10px] text-stone-500 uppercase">Years Durability</div>
+                        </div>
+                        <div class="glass-panel p-4 rounded-xl text-center border-red-200 bg-red-50">
+                            <div class="text-3xl font-bold text-red-600 mb-1">0</div>
+                            <div class="text-[10px] text-stone-500 uppercase">Ink Used (Etched)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-4 gap-4 reveal">
+                    <div class="glass-panel p-6 rounded-2xl relative">
+                        <div class="absolute -top-3 -left-3 w-8 h-8 bg-white shadow-md rounded-full flex items-center justify-center border border-stone-200 text-stone-900 text-xs font-bold">1</div>
+                        <h4 class="font-bold mb-2 text-stone-900">Boiling</h4>
+                        <p class="text-xs text-stone-500">Boiled in milk & turmeric to disinfect.</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl relative">
+                        <div class="absolute -top-3 -left-3 w-8 h-8 bg-white shadow-md rounded-full flex items-center justify-center border border-stone-200 text-stone-900 text-xs font-bold">2</div>
+                        <h4 class="font-bold mb-2 text-stone-900">Polishing</h4>
+                        <p class="text-xs text-stone-500">Dried and polished for flexibility.</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl relative">
+                        <div class="absolute -top-3 -left-3 w-8 h-8 bg-white shadow-md rounded-full flex items-center justify-center border border-stone-200 text-stone-900 text-xs font-bold">3</div>
+                        <h4 class="font-bold mb-2 text-stone-900">Etching</h4>
+                        <p class="text-xs text-stone-500">Data etched with iron stylus.</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl relative">
+                        <div class="absolute -top-3 -left-3 w-8 h-8 bg-white shadow-md rounded-full flex items-center justify-center border border-stone-200 text-stone-900 text-xs font-bold">4</div>
+                        <h4 class="font-bold mb-2 text-stone-900">Encryption</h4>
+                        <p class="text-xs text-stone-500">Rubbed with lemongrass oil.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-32 px-6 bg-stone-50 border-t border-stone-200">
+             <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16 reveal">
+                    <span class="text-stone-500 font-mono text-xs uppercase tracking-widest font-bold">06 • The Knowledge Economy</span>
+                    <h2 class="text-4xl font-bold mt-4 text-stone-900">Residential Universities</h2>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-8">
+                     <div class="glass-panel p-8 rounded-3xl reveal hover:shadow-lg transition-shadow">
+                        <div class="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center mb-6">
+                            <i data-lucide="home" class="text-stone-700"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-stone-900">Agraharas</h3>
+                        <p class="text-sm text-stone-500 leading-relaxed">
+                            Entire villages designed as "Residential Universities". Scholars managed these academic settlements democratically.
+                        </p>
+                    </div>
+                    <div class="glass-panel p-8 rounded-3xl reveal hover:shadow-lg transition-shadow" style="transition-delay: 100ms">
+                        <div class="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center mb-6">
+                            <i data-lucide="users" class="text-stone-700"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-stone-900">The Mahajanas</h3>
+                        <p class="text-sm text-stone-500 leading-relaxed">
+                            A council of scholars who governed the university. Education was free, funded by royal land grants (copper plates).
+                        </p>
+                    </div>
+                    <div class="glass-panel p-8 rounded-3xl reveal hover:shadow-lg transition-shadow" style="transition-delay: 200ms">
+                        <div class="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center mb-6">
+                            <i data-lucide="book-open" class="text-stone-700"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-stone-900">Living Classrooms</h3>
+                        <p class="text-sm text-stone-500 leading-relaxed">
+                            Students lived with teachers, creating a 24/7 immersive learning environment decentralized across rural Karnataka.
+                        </p>
+                    </div>
+                </div>
+             </div>
+        </section>
+
+        <section class="py-32 px-6 bg-white border-t border-stone-200">
+            <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-12">
+                
+                <div class="glass-panel rounded-3xl p-8 border-t-4 border-t-amber-500 reveal shadow-sm">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="p-3 bg-amber-50 rounded-lg"><i data-lucide="orbit" class="text-amber-600"></i></div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-stone-900">Cosmic Calculus</h3>
+                            <p class="text-xs text-stone-400">Bhaskara II (12th Century)</p>
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        <div>
+                            <div class="flex justify-between text-xs font-mono text-stone-400 mb-1">
+                                <span>Sidereal Year</span>
+                                <span class="text-amber-600 font-bold">99.99% Accuracy</span>
+                            </div>
+                            <div class="flex gap-2 items-end">
+                                <div class="text-3xl font-bold text-stone-900">365.2588</div>
+                                <div class="text-xs text-stone-500 mb-1">Days</div>
+                            </div>
+                        </div>
+                        <div class="pt-6 border-t border-stone-100">
+                            <h4 class="text-lg font-bold text-stone-800">Gurutvakarshana (Gravity)</h4>
+                            <p class="text-xs text-stone-500 mt-2 leading-relaxed">
+                                Defined accurately as "Earth attracting celestial bodies" 500 years before Newton.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-3xl p-8 border-t-4 border-t-red-600 reveal shadow-sm" style="transition-delay: 100ms">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="p-3 bg-red-50 rounded-lg"><i data-lucide="stethoscope" class="text-red-600"></i></div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-stone-900">Surgical Protocol</h3>
+                            <p class="text-xs text-stone-400">Sushruta Samhita Standards</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-red-50 p-4 rounded-xl border border-red-100">
+                            <div class="text-2xl font-bold text-red-600">120+</div>
+                            <div class="text-[10px] text-stone-500 uppercase">Instruments</div>
+                        </div>
+                        <div class="bg-red-50 p-4 rounded-xl border border-red-100">
+                            <div class="text-2xl font-bold text-red-600">Free</div>
+                            <div class="text-[10px] text-stone-500 uppercase">Healthcare</div>
+                        </div>
+                    </div>
+                    <ul class="space-y-3 text-sm text-stone-500">
+                        <li class="flex items-center gap-3">
+                            <i data-lucide="check" class="w-4 h-4 text-red-600"></i> Rhinoplasty
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i data-lucide="check" class="w-4 h-4 text-red-600"></i> Cataract Removal
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-32 bg-stone-50 text-center relative border-t border-stone-200">
+            <div class="max-w-6xl mx-auto px-4">
+                <h3 class="text-sm font-mono text-stone-400 mb-8 uppercase tracking-[0.3em] font-bold">Cartography of Knowledge</h3>
+                
+                <div id="heritage-map" style="height: 600px; width: 100%;" class="rounded-3xl border border-stone-200 shadow-xl z-10 relative bg-white"></div>
+                
+                <div class="flex flex-wrap justify-center gap-6 mt-8 text-[10px] font-mono text-stone-500">
+                    <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-500"></span>Scientific Sites (Gold)</span>
+                    <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-red-600"></span>Medical/Vital Sites (Red)</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-white py-16 border-t border-stone-200 text-center text-stone-400">
+        <p class="text-sm font-medium text-stone-900">Designed for the Indian Knowledge Systems Project.</p>
+        <p class="text-xs mt-4 font-mono max-w-2xl mx-auto leading-relaxed">
+            Sources Cited: [1] Temple Architecture, [2] Hoysala, [3] Soapstone, [4] Chloritic Schist, [7] Seismic, [9] Stellate Plan, [13] Hydraulics, [22] Lathe Pillars, [24] Fractal Geometry, [27] Vastu, [37] Basadi Libs, [40] Palm Leaf, [43] Astronomy, [46] Medicine.
+        </p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script>
+        // 1. Reveal Animation
+        document.body.classList.add('js-loaded');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting) entry.target.classList.add('active');
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // 2. Initialize Icons
+        if(typeof lucide !== 'undefined') lucide.createIcons();
+
+        // 3. Lathe Game Logic
+        const slider = document.getElementById('latheSlider');
+        const stone = document.getElementById('latheStone');
+        const shine = document.getElementById('latheShine');
+        const rpmLabel = document.getElementById('rpmLabel');
+        const successOverlay = document.getElementById('latheSuccess');
+
+        if(slider && stone) {
+            let rotation = 0;
+            let speed = 0;
+            function animate() {
+                rotation += speed;
+                stone.style.transform = `rotate(${rotation}deg)`;
+                requestAnimationFrame(animate);
+            }
+            animate();
+
+            slider.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value);
+                speed = val * 0.5;
+                rpmLabel.innerText = Math.floor(val * 12.5) + " RPM";
+                const radius = 30 + (val * 0.2); 
+                const inverse = 100 - radius;
+                
+                if(val < 98) {
+                    stone.style.borderRadius = `${radius}% ${inverse}% ${inverse}% ${radius}% / ${radius}% ${radius}% ${inverse}% ${inverse}%`;
+                    stone.classList.remove('bg-stone-800', 'shadow-2xl');
+                    stone.classList.add('bg-stone-400');
+                    shine.style.opacity = '0';
+                    successOverlay.style.opacity = '0';
+                } else {
+                    stone.style.borderRadius = "50%";
+                    stone.classList.remove('bg-stone-400');
+                    stone.classList.add('bg-stone-800', 'shadow-2xl');
+                    shine.style.opacity = '1';
+                    successOverlay.style.opacity = '1';
+                }
+            });
+        }
+
+        // 4. Map Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            if(typeof L === 'undefined') return;
+            
+            const map = L.map('heritage-map', {
+                center: [14.5204, 75.7224], zoom: 7, scrollWheelZoom: false
+            });
+
+            // LIGHT TILES
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap & CARTO', subdomains: 'abcd', maxZoom: 19
+            }).addTo(map);
+
+            const sites = [
+                { name: "Bijapur", loc: [16.8302, 75.7100], desc: "Calculus", type: "yellow" },
+                { name: "Hampi", loc: [15.3350, 76.4600], desc: "Hydraulic Systems", type: "yellow" },
+                { name: "Balligavi", loc: [14.3996, 75.2325], desc: "Surgical Center", type: "red" },
+                { name: "Shringeri", loc: [13.4198, 75.2568], desc: "Solar Calendar", type: "yellow" },
+                { name: "Belur", loc: [13.1623, 75.8679], desc: "Lathe Tech", type: "yellow" },
+                { name: "Moodabidri", loc: [13.0690, 74.9984], desc: "Manuscript Data", type: "red" }
+            ];
+
+            sites.forEach(site => {
+                const colorClass = site.type === 'yellow' ? 'marker-pin-yellow' : 'marker-pin-red';
+                
+                const icon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div class="w-4 h-4 relative"><div class="${colorClass}"></div></div>`,
+                    iconSize: [16, 16], iconAnchor: [8, 8]
+                });
+                L.marker(site.loc, {icon: icon}).addTo(map)
+                 .bindPopup(`<strong class="text-sm font-bold text-${site.type === 'yellow' ? 'amber-600' : 'red-600'}">${site.name}</strong><br><span class="text-xs text-stone-500">${site.desc}</span>`);
+            });
+        });
+    </script>
+</body>
+</html>
