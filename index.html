@@ -14,17 +14,17 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
     <style>
-        /* BASE STYLES */
+        /* LIGHT THEME BASE */
         body { font-family: 'Inter', sans-serif; background-color: #fafaf9; color: #1c1917; overflow-x: hidden; }
         h1, h2, h3, h4, h5 { font-family: 'Space Grotesk', sans-serif; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
         
-        /* REVEAL ANIMATION */
+        /* Reveal Animation */
         .reveal { opacity: 1; transform: translateY(0); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
         .js-loaded .reveal { opacity: 0; transform: translateY(40px); }
         .js-loaded .reveal.active { opacity: 1; transform: translateY(0); }
         
-        /* GLASS EFFECTS */
+        /* Glassmorphism */
         .glass { 
             background: rgba(255, 255, 255, 0.85); 
             backdrop-filter: blur(16px); 
@@ -60,7 +60,7 @@
 
     <header class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-stone-100">
         <div class="absolute inset-0 z-0">
-            <img src="https://images.unsplash.com/photo-1605445272637-2a58d697330d?q=80&w=2070&auto=format&fit=crop" 
+            <img src="https://images.unsplash.com/photo-1590050752117-238cb0fb9d26?auto=format&fit=crop&q=80&w=2000" 
                  alt="Indian Temple Architecture" 
                  class="w-full h-full object-cover opacity-60 grayscale hover:grayscale-0 transition-all duration-[3s] hover:scale-105">
             <div class="absolute inset-0 bg-gradient-to-t from-stone-50 via-stone-50/70 to-stone-50/30"></div>
@@ -108,7 +108,7 @@
                     </div>
                     
                     <div class="group relative rounded-3xl overflow-hidden aspect-square shadow-2xl reveal hover:rotate-1 transition duration-700 bg-stone-200">
-                        <img src="https://images.unsplash.com/photo-1627894483216-2138af692e32?q=80&w=2000&auto=format&fit=crop" 
+                        <img src="https://images.unsplash.com/photo-1627894483216-2138af692e32?auto=format&fit=crop&q=80&w=1000" 
                              class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                              alt="Intricate Stone Carving">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
@@ -174,7 +174,7 @@
         </section>
 
         <section class="py-32 px-6 bg-stone-900 border-t border-stone-800 select-none relative overflow-hidden text-white">
-            <img src="https://images.unsplash.com/photo-1582555554332-9c2937320023?q=80&w=2070&auto=format&fit=crop" 
+            <img src="https://images.unsplash.com/photo-1582555554332-9c2937320023?auto=format&fit=crop&q=80&w=2000" 
                  class="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay"
                  alt="Indian Temple Pillar">
             <div class="absolute inset-0 bg-gradient-to-t from-stone-900 via-stone-900/60 to-transparent"></div>
@@ -202,9 +202,9 @@
 
                     <div class="relative z-20 px-8">
                         <div class="flex justify-between text-xs font-mono text-stone-400 mb-4 uppercase">
-                            <span>Winter Solstice</span>
+                            <span>Winter</span>
                             <span id="solarLabel" class="text-amber-400 font-bold">December</span>
-                            <span>Summer Solstice</span>
+                            <span>Summer</span>
                         </div>
                         <input type="range" min="0" max="6" value="0" id="solarSlider" class="w-full">
                     </div>
@@ -216,7 +216,7 @@
             <div class="max-w-7xl mx-auto">
                 <div class="grid md:grid-cols-2 gap-16 items-center">
                     <div class="order-2 md:order-1 relative h-[500px] rounded-3xl overflow-hidden shadow-2xl reveal group bg-stone-200">
-                        <img src="https://images.unsplash.com/photo-1600100598379-99fdddb79a61?q=80&w=1000&auto=format&fit=crop" 
+                        <img src="https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&q=80&w=1000" 
                              alt="Hampi Stepwell Geometry" 
                              class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
                         <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
@@ -327,7 +327,7 @@
                         </p>
                         
                         <div class="rounded-2xl overflow-hidden h-48 relative shadow-lg bg-stone-200">
-                            <img src="https://images.unsplash.com/photo-1605218457316-2e86d0e340b3?q=80&w=1000&auto=format&fit=crop" 
+                            <img src="https://images.unsplash.com/photo-1535905557558-afc4877a26fc?auto=format&fit=crop&q=80&w=1000" 
                                  class="w-full h-full object-cover opacity-80" alt="Ancient Manuscript">
                             <div class="absolute inset-0 bg-amber-900/10"></div>
                         </div>
