@@ -1,53 +1,293 @@
-<section class="py-32 px-6 bg-stone-900 text-white relative overflow-hidden border-t border-stone-800" id="maritime">
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stone Science | IKS Project</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+    <style>
+        /* CORE STYLES */
+        body { font-family: 'Inter', sans-serif; background-color: #fafaf9; color: #1c1917; overflow-x: hidden; }
+        h1, h2, h3, h4, h5 { font-family: 'Space Grotesk', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        /* ANIMATIONS */
+        .reveal { opacity: 1; transform: translateY(0); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .js-loaded .reveal { opacity: 0; transform: translateY(40px); }
+        .js-loaded .reveal.active { opacity: 1; transform: translateY(0); }
+        
+        @keyframes pulse-yellow { 0% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(217, 119, 6, 0); } 100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); } }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(185, 28, 28, 0); } 100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); } }
+        @keyframes eclipse { 0% { transform: translateX(150%); } 100% { transform: translateX(-150%); } }
+
+        /* GLASS COMPONENTS */
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); border: 1px solid #e5e5e5; box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.05); }
+        .glass-dark { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+
+        /* MAP & UI */
+        .leaflet-popup-content-wrapper { background: #ffffff; color: #1c1917; border-radius: 8px; font-family: 'JetBrains Mono', monospace; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #e5e5e5; }
+        .leaflet-popup-tip { background: #ffffff; }
+        .marker-pin-yellow { width: 16px; height: 16px; border-radius: 50%; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.7); animation: pulse-yellow 2s infinite; background: #d97706; border: 2px solid white; }
+        .marker-pin-red { width: 16px; height: 16px; border-radius: 50%; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); animation: pulse-red 2s infinite; background: #b91c1c; border: 2px solid white; }
+        
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: #d97706; border: 3px solid #ffffff; cursor: pointer; margin-top: -10px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #e5e5e5; border-radius: 4px; }
+    </style>
+</head>
+<body class="antialiased selection:bg-amber-200 selection:text-amber-900">
+
+    <header class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-stone-100">
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1590050752117-238cb0fb9d26?auto=format&fit=crop&q=80&w=2000" 
+                 alt="Indian Temple Architecture" 
+                 class="w-full h-full object-cover opacity-60 grayscale hover:grayscale-0 transition-all duration-[3s] hover:scale-105">
+            <div class="absolute inset-0 bg-gradient-to-t from-stone-50 via-stone-50/70 to-stone-50/30"></div>
+        </div>
+        
+        <div class="z-10 text-center px-4 max-w-5xl mx-auto pt-20">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-amber-200 bg-white/80 backdrop-blur-md text-amber-700 text-[10px] font-mono uppercase tracking-widest mb-8 reveal shadow-lg">
+                <span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
+                Indian Knowledge Systems
+            </div>
+            <h1 class="text-6xl md:text-[9rem] leading-none font-bold tracking-tighter mb-8 text-stone-900 reveal drop-shadow-xl mix-blend-multiply">
+                STONE<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-red-700">SCIENCE</span>
+            </h1>
+            <p class="text-stone-700 text-lg md:text-2xl max-w-2xl mx-auto leading-relaxed reveal font-medium">
+                Engineering the Divine: From the polymer-like properties of Soapstone to the calculus of the stars.
+            </p>
+        </div>
+        
+        <div class="absolute bottom-10 animate-bounce opacity-60">
+            <i data-lucide="arrow-down" class="text-stone-900 w-8 h-8"></i>
+        </div>
+    </header>
+
+    <main>
+        <section class="py-32 px-6 bg-white border-t border-stone-200 relative">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid md:grid-cols-2 gap-16 items-start">
+                    <div class="reveal relative z-10">
+                        <span class="text-amber-600 font-mono text-xs uppercase tracking-widest font-bold">01 • Material Science</span>
+                        <h2 class="text-5xl font-bold mt-4 mb-8 text-stone-900">The Polymer of the Past</h2>
+                        <p class="text-stone-600 text-lg leading-relaxed mb-8">
+                            Hoysala architects abandoned hard granite for <strong>Chloritic Schist</strong> (Soapstone). This material behaves like a modern polymer: soft when quarried, allowing for "lace-like" carvings, but chemically hardening upon exposure to the atmosphere.
+                        </p>
+                        <div class="glass-panel rounded-2xl p-6 mt-8">
+                            <h4 class="text-xs font-bold uppercase tracking-widest text-red-600 mb-4 border-b border-stone-100 pb-2">Lithic Comparison</h4>
+                            <div class="grid grid-cols-3 gap-4 text-sm font-mono text-stone-500">
+                                <div class="text-stone-400">Property</div><div class="text-stone-900 font-bold">Granite</div><div class="text-amber-600 font-bold">Soapstone</div>
+                                <div>Hardness</div><div>6-7 (Hard)</div><div>1-2 (Soft)</div>
+                                <div>Detailing</div><div>Low Res</div><div>High Precision</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="group relative rounded-3xl overflow-hidden aspect-square shadow-2xl reveal hover:rotate-1 transition duration-700 bg-stone-200">
+                        <img src="https://images.unsplash.com/photo-1627894483216-2138af692e32?auto=format&fit=crop&q=80&w=1000" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Intricate Stone Carving">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-8 left-8 text-white">
+                            <div class="text-xs font-mono text-amber-400 uppercase font-bold mb-1">Visual Evidence</div>
+                            <div class="text-3xl font-bold">Lace-like Detailing</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-32 px-6 bg-stone-50 border-t border-stone-200">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-20 reveal">
+                    <span class="text-red-600 font-mono text-xs uppercase tracking-widest font-bold">02 • Structural Engineering</span>
+                    <h2 class="text-4xl md:text-5xl font-bold mt-4 text-stone-900">The Ancient CAD System</h2>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="glass-panel p-8 rounded-3xl relative overflow-hidden group reveal hover:-translate-y-2 transition-transform duration-300">
+                        <div class="absolute top-0 right-0 p-6 opacity-10"><i data-lucide="grid" class="w-12 h-12 text-amber-600"></i></div>
+                        <h3 class="text-xl font-bold mb-2 text-stone-900">The 8x8 Modulus</h3>
+                        <p class="text-sm text-stone-500 leading-relaxed mb-6">The <em>Vastu Purusha Mandala</em> was a rigorous grid (8x8 or 9x9) acting as a modular framework.</p>
+                        <div class="w-full aspect-square border border-amber-100 rounded-lg grid grid-cols-8 grid-rows-8 gap-px bg-amber-50"><script>for(let i=0;i<64;i++) document.write(`<div class="bg-amber-100/50"></div>`)</script></div>
+                    </div>
+                    <div class="glass-panel p-8 rounded-3xl relative overflow-hidden group reveal hover:-translate-y-2 transition-transform duration-300" style="transition-delay: 100ms">
+                        <div class="absolute top-0 right-0 p-6 opacity-10"><i data-lucide="triangle" class="w-12 h-12 text-red-600"></i></div>
+                        <h3 class="text-xl font-bold mb-2 text-stone-900">Recursive Geometry</h3>
+                        <p class="text-sm text-stone-500 leading-relaxed mb-6">Temples utilized "self-similar" fractal patterns. The smallest shrine unit is scaled up.</p>
+                        <div class="flex items-center justify-center h-48 border border-red-100 rounded-lg bg-red-50"><div class="text-center"><div class="text-4xl font-bold text-red-600">1 : 1.4</div></div></div>
+                    </div>
+                    <div class="glass-panel p-8 rounded-3xl relative overflow-hidden group reveal hover:-translate-y-2 transition-transform duration-300" style="transition-delay: 200ms">
+                        <div class="absolute top-0 right-0 p-6 opacity-10"><i data-lucide="activity" class="w-12 h-12 text-stone-900"></i></div>
+                        <h3 class="text-xl font-bold mb-2 text-stone-900">Base Isolation</h3>
+                        <p class="text-sm text-stone-500 leading-relaxed mb-6">The temple sits on a raised platform (<em>Jagati</em>) acting as a shock absorber.</p>
+                        <div class="mt-4 border-t border-dashed border-stone-200 pt-4"><div class="flex justify-between items-center text-xs font-mono"><span class="text-stone-400">Mortar Used</span><span class="text-stone-900 font-bold">0% (Zero)</span></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-32 px-6 bg-stone-900 border-t border-stone-800 select-none relative overflow-hidden text-white">
+            <img src="https://images.unsplash.com/photo-1582555554332-9c2937320023?auto=format&fit=crop&q=80&w=2000" class="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay" alt="Indian Temple Pillar">
+            <div class="absolute inset-0 bg-gradient-to-t from-stone-900 via-stone-900/60 to-transparent"></div>
+            <div class="max-w-4xl mx-auto text-center relative z-10">
+                <span class="text-amber-500 text-xs font-mono uppercase tracking-widest font-bold">03 • Astronomical Architecture</span>
+                <h3 class="text-4xl font-bold mt-4 mb-6 text-white">The Solar Calendar</h3>
+                <p class="text-stone-300 mb-12 text-lg">The Shringeri Vidya Shankara temple is designed so that sunlight hits specific pillars during solstices and equinoxes.</p>
+                <div class="glass-panel bg-white/10 border-white/10 rounded-3xl p-8 relative overflow-hidden backdrop-blur-md">
+                    <div class="relative h-64 flex items-center justify-center bg-black/40 rounded-2xl mb-8 border border-white/5">
+                        <div class="flex gap-4 items-end h-32">
+                            <div class="w-8 h-24 bg-stone-600 rounded-t-sm relative"><div class="absolute -bottom-6 text-[10px] text-stone-500">DEC</div></div>
+                            <div class="w-8 h-24 bg-stone-600 rounded-t-sm relative"><div class="absolute -bottom-6 text-[10px] text-stone-500">JAN</div></div>
+                            <div class="w-8 h-24 bg-stone-600 rounded-t-sm relative"><div class="absolute -bottom-6 text-[10px] text-stone-500">FEB</div></div>
+                            <div class="w-8 h-24 bg-stone-600 rounded-t-sm relative"><div class="absolute -bottom-6 text-[10px] text-stone-500">MAR</div></div>
+                            <div class="w-8 h-24 bg-stone-600 rounded-t-sm relative"><div class="absolute -bottom-6 text-[10px] text-stone-500">APR</div></div>
+                        </div>
+                        <div id="sunBeam" class="absolute top-0 w-12 h-full bg-gradient-to-b from-amber-400/80 to-transparent pointer-events-none transition-all duration-300 blur-md mix-blend-screen" style="left: 10%;"></div>
+                    </div>
+                    <div class="relative z-20 px-8">
+                        <div class="flex justify-between text-xs font-mono text-stone-400 mb-4 uppercase"><span>Winter</span><span id="solarLabel" class="text-amber-400 font-bold">December</span><span>Summer</span></div>
+                        <input type="range" min="0" max="4" value="0" id="solarSlider" class="w-full">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-32 px-6 bg-white border-t border-stone-200">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid md:grid-cols-2 gap-16 items-center">
+                    <div class="order-2 md:order-1 relative h-[500px] rounded-3xl overflow-hidden shadow-2xl reveal group bg-stone-200">
+                        <img src="https://images.unsplash.com/photo-1590425769784-0985223f0343?q=80&w=1000&auto=format&fit=crop" 
+                             alt="Hampi Pushkarani (Stepwell) Geometry" 
+                             class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                        <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
+                        <div class="absolute bottom-8 left-8">
+                            <div class="p-3 bg-white/20 backdrop-blur-md rounded-xl inline-flex text-white border border-white/30"><i data-lucide="droplets" class="w-6 h-6"></i></div>
+                            <div class="mt-4 text-white font-bold text-xl">Geometric Precision</div>
+                        </div>
+                    </div>
+                    <div class="order-1 md:order-2 reveal">
+                        <span class="text-cyan-600 font-mono text-xs uppercase tracking-widest font-bold">04 • Civil Engineering</span>
+                        <h2 class="text-4xl md:text-5xl font-bold mt-4 mb-8 text-stone-900">Hydraulic Supremacy</h2>
+                        <p class="text-stone-600 text-lg leading-relaxed mb-8">
+                            The Vijayanagara Empire (Hampi) constructed a vast network of <strong>gravity-fed canals</strong>, syphons, and aqueducts to transport water from the Tungabhadra River over rugged terrain.
+                        </p>
+                        <div class="space-y-4">
+                            <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                                <div class="p-3 bg-cyan-50 rounded-lg text-cyan-600"><i data-lucide="waves" class="w-5 h-5"></i></div>
+                                <div><h5 class="font-bold text-stone-900">Pushkaranis</h5><p class="text-xs text-stone-500">Inverted pyramidal tanks using zero mortar.</p></div>
+                            </div>
+                            <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                                <div class="p-3 bg-cyan-50 rounded-lg text-cyan-600"><i data-lucide="filter" class="w-5 h-5"></i></div>
+                                <div><h5 class="font-bold text-stone-900">Filtration</h5><p class="text-xs text-stone-500">Lacustrine movement used to filter water naturally.</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-32 px-6 bg-white border-t border-stone-200 text-center">
+            <div class="max-w-3xl mx-auto">
+                <span class="text-red-600 text-xs font-mono uppercase tracking-widest font-bold">05 • Fractal Innovation</span>
+                <h3 class="text-4xl font-bold mt-4 mb-6 text-stone-900">The Stellate Plan</h3>
+                <div class="glass-panel p-12 rounded-3xl inline-block relative cursor-pointer group hover:shadow-xl transition-all" id="fractalTrigger">
+                    <div id="fractalShape" class="w-48 h-48 bg-stone-200 transition-all duration-700 ease-in-out relative flex items-center justify-center">
+                        <span id="fractalText" class="text-stone-500 font-bold font-mono">SQUARE</span>
+                    </div>
+                    <p class="mt-8 text-xs text-stone-400 uppercase tracking-widest">Click to Evolve</p>
+                </div>
+                <div id="fractalStats" class="mt-8 opacity-50 transition-opacity duration-500">
+                    <span class="text-red-600 font-bold text-2xl">100%</span><span class="text-stone-400 text-xs uppercase ml-2">Surface Area</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-32 px-6 bg-stone-50 border-t border-stone-200 select-none relative overflow-hidden">
+            <div class="max-w-3xl mx-auto relative z-10 text-center">
+                <span class="text-amber-600 text-xs font-mono uppercase tracking-widest mb-4 block font-bold">06 • Interactive Simulation</span>
+                <h3 class="text-4xl font-bold mb-6 text-stone-900">The Lathe-Turned Pillar</h3>
+                <div class="glass-panel rounded-3xl p-12 max-w-lg mx-auto relative">
+                    <div class="relative w-56 h-56 mx-auto flex items-center justify-center mb-10">
+                        <div id="latheStone" class="w-40 h-40 bg-stone-400 rounded-[35%] relative overflow-hidden transition-all duration-75 ease-linear shadow-inner border border-stone-300">
+                            <div class="absolute inset-0 opacity-10 bg-[repeating-linear-gradient(90deg,transparent,transparent_2px,#000_2px,#000_4px)]"></div>
+                            <div id="latheShine" class="absolute inset-0 opacity-0 bg-gradient-to-tr from-transparent via-white/80 to-transparent transition-opacity duration-500"></div>
+                        </div>
+                    </div>
+                    <div class="relative z-20">
+                        <div class="flex justify-between text-[10px] font-mono text-stone-400 mb-4 uppercase tracking-wider"><span>Rough Block</span><span id="rpmLabel" class="text-amber-600 font-bold">0 RPM</span><span>Polished</span></div>
+                        <input type="range" min="0" max="100" value="0" id="latheSlider" class="w-full">
+                    </div>
+                    <div id="latheSuccess" class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm rounded-3xl opacity-0 pointer-events-none transition-opacity duration-500 z-30">
+                        <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4 text-green-600 shadow-sm"><i data-lucide="check" class="w-8 h-8"></i></div>
+                        <h4 class="text-xl font-bold text-stone-900">Symmetry Achieved</h4>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-32 px-6 bg-white border-t border-stone-200">
+            <div class="max-w-5xl mx-auto">
+                <div class="flex flex-col md:flex-row gap-12 items-center mb-16 reveal">
+                    <div class="md:w-1/2">
+                        <span class="text-red-600 font-mono text-xs uppercase tracking-widest font-bold">07 • Information Technology</span>
+                        <h2 class="text-4xl font-bold mt-4 mb-6 text-stone-900">The Ancient "Cloud" Server</h2>
+                        <p class="text-stone-600 text-sm leading-relaxed mb-6">
+                            The Jain Basadis of Moodabidri functioned as data centers. They engineered <strong>Talegari</strong> (processed palm leaves), creating archival material that resisted rot and termites for centuries.
+                        </p>
+                        <div class="rounded-2xl overflow-hidden h-48 relative shadow-lg bg-stone-200">
+                            <img src="https://images.unsplash.com/photo-1535905557558-afc4877a26fc?auto=format&fit=crop&q=80&w=1000" class="w-full h-full object-cover opacity-80" alt="Ancient Manuscript">
+                        </div>
+                    </div>
+                    <div class="md:w-1/2 grid grid-cols-2 gap-4">
+                        <div class="glass-panel p-4 rounded-xl text-center border-amber-200 bg-amber-50">
+                            <div class="text-3xl font-bold text-amber-600 mb-1">500+</div><div class="text-[10px] text-stone-500 uppercase">Years Durability</div>
+                        </div>
+                        <div class="glass-panel p-4 rounded-xl text-center border-red-200 bg-red-50">
+                            <div class="text-3xl font-bold text-red-600 mb-1">0</div><div class="text-[10px] text-stone-500 uppercase">Ink Used (Etched)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-32 px-6 bg-stone-900 text-white relative overflow-hidden border-t border-stone-800" id="maritime">
             <div class="absolute inset-0 opacity-20" style="background-image: url('https://www.transparenttextures.com/patterns/nautical-leather.png');"></div>
-            
             <div class="max-w-7xl mx-auto relative z-10">
                 <div class="text-center mb-20 reveal">
-                    <span class="text-cyan-500 font-mono text-xs uppercase tracking-widest font-bold">09 • Trade & Naval Power</span>
+                    <span class="text-cyan-500 font-mono text-xs uppercase tracking-widest font-bold">08 • Trade & Naval Power</span>
                     <h2 class="text-5xl md:text-7xl font-bold mt-4 mb-6">Masters of the Monsoon</h2>
-                    <p class="text-stone-400 max-w-2xl mx-auto text-lg">
-                        Long before modern navigation, Karnataka's mastery of wind cycles and currents turned the Indian Ocean into a global highway.
-                    </p>
+                    <p class="text-stone-400 max-w-2xl mx-auto text-lg">Karnataka's mastery of wind cycles turned the Indian Ocean into a global highway.</p>
                 </div>
 
                 <div class="grid md:grid-cols-3 gap-8 mb-32">
-                    <div class="glass-panel bg-stone-800/50 border-stone-700 p-8 rounded-3xl reveal hover:bg-stone-800 transition-colors duration-300">
+                    <div class="glass-dark p-8 rounded-3xl reveal hover:bg-stone-800 transition-colors duration-300">
                         <div class="h-48 rounded-2xl bg-stone-700 mb-6 overflow-hidden relative group">
-                            <img src="https://images.unsplash.com/photo-1580325492147-320d3221b22e?auto=format&fit=crop&q=80&w=800" 
-                                 class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                                 alt="Bhatkal Port Historic Mood">
-                            <div class="absolute top-4 right-4 bg-cyan-900/80 backdrop-blur text-cyan-200 text-xs font-bold px-3 py-1 rounded-full border border-cyan-500/30">MEDIEVAL HUB</div>
+                            <img src="https://images.unsplash.com/photo-1580325492147-320d3221b22e?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Bhatkal">
+                            <div class="absolute top-4 right-4 bg-cyan-900/80 text-cyan-200 text-xs font-bold px-3 py-1 rounded-full border border-cyan-500/30">MEDIEVAL HUB</div>
                         </div>
                         <h3 class="text-2xl font-bold text-white mb-2">Bhatkal</h3>
-                        <p class="text-stone-400 text-sm leading-relaxed mb-4">
-                            Strategically positioned to connect the Deccan hinterland with Arabia and Persia. A center for the <strong>Horse Trade</strong> that fueled Vijayanagara's cavalry.
-                        </p>
+                        <p class="text-stone-400 text-sm leading-relaxed">Strategically positioned to connect the Deccan hinterland with Arabia. A center for the <strong>Horse Trade</strong>.</p>
                     </div>
 
-                    <div class="glass-panel bg-stone-800/50 border-stone-700 p-8 rounded-3xl reveal hover:bg-stone-800 transition-colors duration-300" style="transition-delay: 100ms">
+                    <div class="glass-dark p-8 rounded-3xl reveal hover:bg-stone-800 transition-colors duration-300" style="transition-delay: 100ms">
                         <div class="h-48 rounded-2xl bg-stone-700 mb-6 overflow-hidden relative group">
-                            <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&q=80&w=800" 
-                                 class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                                 alt="Sharavathi River Mouth">
-                            <div class="absolute top-4 right-4 bg-cyan-900/80 backdrop-blur text-cyan-200 text-xs font-bold px-3 py-1 rounded-full border border-cyan-500/30">RIVER-SEA LINK</div>
+                            <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Honnavar">
+                            <div class="absolute top-4 right-4 bg-cyan-900/80 text-cyan-200 text-xs font-bold px-3 py-1 rounded-full border border-cyan-500/30">RIVER-SEA LINK</div>
                         </div>
                         <h3 class="text-2xl font-bold text-white mb-2">Honnavar</h3>
-                        <p class="text-stone-400 text-sm leading-relaxed mb-4">
-                            A unique <strong>River–Sea Interface</strong> at the Sharavathi mouth. It exemplified indigenous logistical knowledge, seamlessly integrating river barges with ocean-going vessels.
-                        </p>
+                        <p class="text-stone-400 text-sm leading-relaxed">A unique <strong>River–Sea Interface</strong> at the Sharavathi mouth, integrating river barges with ocean vessels.</p>
                     </div>
 
-                    <div class="glass-panel bg-stone-800/50 border-stone-700 p-8 rounded-3xl reveal hover:bg-stone-800 transition-colors duration-300" style="transition-delay: 200ms">
+                    <div class="glass-dark p-8 rounded-3xl reveal hover:bg-stone-800 transition-colors duration-300" style="transition-delay: 200ms">
                         <div class="h-48 rounded-2xl bg-stone-700 mb-6 overflow-hidden relative group">
-                            <img src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&q=80&w=800" 
-                                 class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                                 alt="Mangalore Coast">
-                            <div class="absolute top-4 right-4 bg-cyan-900/80 backdrop-blur text-cyan-200 text-xs font-bold px-3 py-1 rounded-full border border-cyan-500/30">GLOBAL GATEWAY</div>
+                            <img src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Mangalore">
+                            <div class="absolute top-4 right-4 bg-cyan-900/80 text-cyan-200 text-xs font-bold px-3 py-1 rounded-full border border-cyan-500/30">GLOBAL GATEWAY</div>
                         </div>
                         <h3 class="text-2xl font-bold text-white mb-2">Mangalore</h3>
-                        <p class="text-stone-400 text-sm leading-relaxed mb-4">
-                            The primary gateway connecting the resource-rich Western Ghats to the <strong>Maritime Silk Route</strong>. Famous for exporting pepper, timber, and coir.
-                        </p>
+                        <p class="text-stone-400 text-sm leading-relaxed">The primary gateway connecting the Western Ghats to the <strong>Maritime Silk Route</strong>.</p>
                     </div>
                 </div>
 
@@ -56,19 +296,13 @@
                         <div class="md:w-1/2">
                             <span class="text-amber-500 font-mono text-xs uppercase tracking-widest font-bold">Global Network</span>
                             <h3 class="text-3xl font-bold mt-2 mb-6 text-white">The Roman Connection</h3>
-                            <p class="text-stone-300 text-lg mb-6">
-                                Archaeological finds, including <strong>Roman Denarii</strong> coins found in Karnataka, prove active commercial exchange. Goods from the Deccan reached Rome via the Red Sea, paid for in gold and silver.
-                            </p>
+                            <p class="text-stone-300 text-lg mb-6">Archaeological finds, including <strong>Roman Denarii</strong> coins found in Karnataka, prove active commercial exchange. Goods reached Rome via the Red Sea.</p>
                             <div class="p-4 bg-stone-900 rounded-xl border-l-4 border-amber-500">
-                                <p class="text-xs text-stone-400 font-mono italic">
-                                    "Karnataka’s spices would be sent to Kerala and Bombay, from where it would be shipped to different parts of the world."
-                                </p>
+                                <p class="text-xs text-stone-400 font-mono italic">"Karnataka’s spices would be shipped to Kerala and Bombay, then to the world."</p>
                             </div>
                         </div>
                         <div class="md:w-1/2 relative h-64 md:h-80 w-full bg-stone-900 rounded-2xl overflow-hidden border border-stone-600 group">
-                             <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=1000" 
-                                  class="w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-opacity duration-500" 
-                                  alt="Ancient World Map">
+                             <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=1000" class="w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-opacity duration-500" alt="Ancient World Map">
                              <div class="absolute inset-0 flex items-center justify-center">
                                 <div class="text-center">
                                     <h4 class="text-2xl font-bold text-white tracking-widest">MARITIME SILK ROAD</h4>
@@ -83,62 +317,34 @@
                     <h3 class="text-3xl font-bold text-white mb-12 text-center">Trade Goods of the Deccan</h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div class="group relative aspect-[3/4] rounded-2xl overflow-hidden reveal">
-                            <img src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&q=80&w=600" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Spices Market">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent p-6 flex flex-col justify-end">
-                                <div class="text-amber-400 font-mono text-xs mb-1">Black Gold</div>
-                                <h4 class="text-xl font-bold">Spices</h4>
-                            </div>
+                            <img src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&q=80&w=600" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Spices">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent p-6 flex flex-col justify-end"><h4 class="text-xl font-bold text-amber-400">Spices</h4></div>
                         </div>
                         <div class="group relative aspect-[3/4] rounded-2xl overflow-hidden reveal">
-                            <img src="https://images.unsplash.com/photo-1615486511484-92e172cc416d?auto=format&fit=crop&q=80&w=600" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Sandalwood Forest">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent p-6 flex flex-col justify-end">
-                                <div class="text-amber-400 font-mono text-xs mb-1">Medicinal Timber</div>
-                                <h4 class="text-xl font-bold">Sandalwood</h4>
-                            </div>
+                            <img src="https://images.unsplash.com/photo-1615486511484-92e172cc416d?auto=format&fit=crop&q=80&w=600" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Sandalwood">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent p-6 flex flex-col justify-end"><h4 class="text-xl font-bold text-amber-400">Sandalwood</h4></div>
                         </div>
                         <div class="group relative aspect-[3/4] rounded-2xl overflow-hidden reveal">
-                            <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=600" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Indian Textiles">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent p-6 flex flex-col justify-end">
-                                <div class="text-amber-400 font-mono text-xs mb-1">Handloom</div>
-                                <h4 class="text-xl font-bold">Textiles</h4>
-                            </div>
+                            <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=600" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Textiles">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent p-6 flex flex-col justify-end"><h4 class="text-xl font-bold text-amber-400">Textiles</h4></div>
                         </div>
                         <div class="group relative aspect-[3/4] rounded-2xl overflow-hidden reveal">
-                            <img src="https://images.unsplash.com/photo-1628151015968-3a4429e9ef04?auto=format&fit=crop&q=80&w=600" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale" alt="Wootz Steel Texture">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent p-6 flex flex-col justify-end">
-                                <div class="text-amber-400 font-mono text-xs mb-1">Metallurgy</div>
-                                <h4 class="text-xl font-bold">Wootz Steel</h4>
-                            </div>
+                            <img src="https://images.unsplash.com/photo-1628151015968-3a4429e9ef04?auto=format&fit=crop&q=80&w=600" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale" alt="Wootz Steel">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent p-6 flex flex-col justify-end"><h4 class="text-xl font-bold text-amber-400">Wootz Steel</h4></div>
                         </div>
                     </div>
                 </div>
 
                 <div class="relative rounded-3xl overflow-hidden reveal">
-                    <img src="https://images.unsplash.com/photo-1519011985187-444d62641929?auto=format&fit=crop&q=80&w=2000" class="w-full h-96 object-cover opacity-60" alt="Navy Ship at Sea">
+                    <img src="https://images.unsplash.com/photo-1519011985187-444d62641929?auto=format&fit=crop&q=80&w=2000" class="w-full h-96 object-cover opacity-60" alt="Navy Ship">
                     <div class="absolute inset-0 bg-gradient-to-r from-stone-900 via-stone-900/80 to-transparent flex items-center">
                         <div class="p-12 md:w-1/2">
-                            <div class="flex items-center gap-3 mb-4">
-                                <div class="w-10 h-1 bg-cyan-500"></div>
-                                <span class="text-cyan-400 uppercase tracking-widest font-bold text-xs">Modern Legacy</span>
-                            </div>
+                            <div class="flex items-center gap-3 mb-4"><div class="w-10 h-1 bg-cyan-500"></div><span class="text-cyan-400 uppercase tracking-widest font-bold text-xs">Modern Legacy</span></div>
                             <h3 class="text-4xl font-bold mb-6 text-white">Project Seabird: INS Kadamba</h3>
-                            <p class="text-stone-300 mb-8 leading-relaxed">
-                                Continuing the maritime tradition, Karwar hosts the <strong>INS Kadamba</strong>, India's first exclusive naval base. It features the country's first shiplift system and is designed to house aircraft carriers like the INS Vikramaditya, making it the largest naval base in the eastern hemisphere.
-                            </p>
-                            <div class="inline-block border border-cyan-500/50 bg-cyan-500/10 px-6 py-3 rounded-lg backdrop-blur-sm">
-                                <span class="text-cyan-300 font-mono text-sm">Status: </span>
-                                <span class="text-white font-bold ml-2">Active Strategic Base</span>
-                            </div>
+                            <p class="text-stone-300 mb-8 leading-relaxed">Karwar hosts <strong>INS Kadamba</strong>, India's first exclusive naval base. It features the country's first shiplift system and houses aircraft carriers like the INS Vikramaditya.</p>
+                            <div class="inline-block border border-cyan-500/50 bg-cyan-500/10 px-6 py-3 rounded-lg backdrop-blur-sm"><span class="text-cyan-300 font-mono text-sm">Status: </span><span class="text-white font-bold ml-2">Active Strategic Base</span></div>
                         </div>
                     </div>
-                </div>
-
-                <div class="mt-20 p-8 border border-dashed border-stone-600 rounded-2xl bg-stone-800/30 text-center reveal">
-                    <i data-lucide="compass" class="w-8 h-8 text-amber-500 mx-auto mb-4"></i>
-                    <h4 class="text-amber-500 font-bold uppercase tracking-widest text-xs mb-2">IKS Insight</h4>
-                    <p class="text-stone-300 max-w-3xl mx-auto font-mono text-sm">
-                        "Navigation and shipbuilding in Karnataka exemplify indigenous scientific knowledge where environmental observation, engineering skill, and maritime experience combined to support global trade networks."
-                    </p>
                 </div>
             </div>
         </section>
@@ -146,7 +352,7 @@
         <section class="py-32 px-6 bg-white border-t border-stone-200" id="science">
             <div class="max-w-7xl mx-auto">
                 <div class="text-center mb-20 reveal">
-                    <span class="text-purple-600 font-mono text-xs uppercase tracking-widest font-bold">10 • Mathematical & Scientific Heritage</span>
+                    <span class="text-purple-600 font-mono text-xs uppercase tracking-widest font-bold">09 • Mathematical & Scientific Heritage</span>
                     <h2 class="text-5xl md:text-6xl font-bold mt-4 mb-6 text-stone-900">Calculus of the Stars</h2>
                 </div>
 
@@ -155,21 +361,13 @@
                         <h3 class="text-3xl font-bold text-stone-900 mb-4">The Infinite Series</h3>
                         <div class="w-20 h-1 bg-purple-600 mb-6"></div>
                         <p class="text-stone-600 leading-relaxed mb-6">
-                            Scholars from the <strong>Kerala-Karnataka</strong> tradition developed sophisticated methods in trigonometry and infinite series centuries before Europe. 
-                            <strong>Madhava of Sangamagrama</strong>'s influence extended into Karnataka, creating a lineage of mathematical reasoning that handled the concept of infinity.
+                            Scholars from the <strong>Kerala-Karnataka</strong> tradition developed sophisticated methods in trigonometry and infinite series centuries before Europe. <strong>Madhava of Sangamagrama</strong>'s influence extended into Karnataka.
                         </p>
                         <ul class="space-y-4 font-mono text-sm text-stone-500">
-                            <li class="flex items-center gap-3">
-                                <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
-                                Sine & Cosine Series Expansion
-                            </li>
-                            <li class="flex items-center gap-3">
-                                <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
-                                Precise Circle Arc Approximation
-                            </li>
+                            <li class="flex items-center gap-3"><div class="w-2 h-2 bg-purple-500 rounded-full"></div>Sine & Cosine Series Expansion</li>
+                            <li class="flex items-center gap-3"><div class="w-2 h-2 bg-purple-500 rounded-full"></div>Precise Circle Arc Approximation</li>
                         </ul>
                     </div>
-                    
                     <div class="glass-panel p-8 rounded-3xl bg-purple-50 border-purple-100 relative overflow-hidden reveal">
                         <div class="aspect-square relative flex items-center justify-center">
                             <div class="w-64 h-64 rounded-full border-2 border-stone-300 relative">
@@ -187,25 +385,19 @@
 
                 <div class="bg-stone-900 rounded-3xl p-8 md:p-16 text-white mb-32 relative overflow-hidden reveal">
                     <div class="absolute top-0 right-0 p-32 bg-amber-500/10 rounded-full blur-3xl"></div>
-                    
                     <div class="relative z-10 grid md:grid-cols-2 gap-12 items-center">
                         <div class="order-2 md:order-1">
                             <div class="relative h-64 w-full flex items-center justify-center bg-black/50 rounded-2xl border border-white/10">
-                                <div class="w-24 h-24 bg-amber-400 rounded-full shadow-[0_0_50px_rgba(251,191,36,0.4)]"></div> <div class="w-24 h-24 bg-black rounded-full absolute animate-[eclipse_4s_infinite_linear] shadow-lg"></div> </div>
-                            <style>
-                                @keyframes eclipse {
-                                    0% { transform: translateX(150%); }
-                                    100% { transform: translateX(-150%); }
-                                }
-                            </style>
+                                <div class="w-24 h-24 bg-amber-400 rounded-full shadow-[0_0_50px_rgba(251,191,36,0.4)]"></div>
+                                <div class="w-24 h-24 bg-black rounded-full absolute animate-[eclipse_4s_infinite_linear] shadow-lg"></div>
+                            </div>
                             <div class="text-center mt-4 text-xs font-mono text-stone-500">Eclipse Prediction Model</div>
                         </div>
-
                         <div class="order-1 md:order-2">
                             <span class="text-amber-500 font-mono text-xs uppercase tracking-widest font-bold">Astronomy</span>
-                            <h3 class="text-3xl font-bold mt-2 mb-6">Bhaskara II & The Panchanga</h3>
+                            <h3 class="text-3xl font-bold mt-2 mb-6">Bhaskara II (Bijapur)</h3>
                             <p class="text-stone-300 mb-6 leading-relaxed">
-                                Associated with the Bijapur region, <strong>Bhaskara II</strong> wrote the <em>Siddhanta Shiromani</em>, explaining planetary motion and time measurement. Indigenous astronomers used these calculations to create the <strong>Panchanga</strong> (Calendar), essential for predicting seasonal changes for agriculture.
+                                Associated with the Bijapur region, <strong>Bhaskara II</strong> wrote the <em>Siddhanta Shiromani</em>, explaining planetary motion. Indigenous astronomers used these calculations to create the <strong>Panchanga</strong> (Calendar).
                             </p>
                         </div>
                     </div>
@@ -217,29 +409,123 @@
                             <div class="p-3 bg-green-50 rounded-lg text-green-700"><i data-lucide="leaf" class="w-6 h-6"></i></div>
                             <h3 class="text-xl font-bold text-stone-900">Ayurveda</h3>
                         </div>
-                        <p class="text-stone-500 text-sm leading-relaxed mb-4">
-                            Coastal Karnataka served as a hub for medicinal plant knowledge. Indigenous physicians preserved treatments in palm-leaf manuscripts, balancing the <em>Tridoshas</em> (Vata-Pitta-Kapha).
-                        </p>
+                        <p class="text-stone-500 text-sm leading-relaxed">Coastal Karnataka served as a hub for medicinal plant knowledge. Indigenous physicians preserved treatments in palm-leaf manuscripts.</p>
                     </div>
-
                     <div class="glass-panel p-8 rounded-3xl border-t-4 border-t-slate-600">
                         <div class="flex items-center gap-4 mb-6">
                             <div class="p-3 bg-slate-100 rounded-lg text-slate-700"><i data-lucide="hammer" class="w-6 h-6"></i></div>
                             <h3 class="text-xl font-bold text-stone-900">Wootz Steel</h3>
                         </div>
-                        <p class="text-stone-500 text-sm leading-relaxed mb-4">
-                            The Deccan was the birthplace of high-carbon <strong>Wootz Steel</strong>, exported to create famous Damascus blades. It reflects advanced indigenous material science in ore selection and carbon management.
-                        </p>
+                        <p class="text-stone-500 text-sm leading-relaxed">The Deccan was the birthplace of high-carbon <strong>Wootz Steel</strong>, exported to create famous Damascus blades.</p>
                     </div>
-                </div>
-
-                <div class="text-center max-w-2xl mx-auto reveal pb-16">
-                    <div class="inline-block px-6 py-2 rounded-full bg-stone-100 text-stone-600 text-xs font-bold uppercase tracking-widest border border-stone-200">
-                        Summary
-                    </div>
-                    <p class="mt-6 text-xl font-medium text-stone-800">
-                        "Karnataka’s scientific heritage is not just history—it is a testament to an indigenous system where mathematics, astronomy, and engineering were deeply interwoven with daily life and global trade."
-                    </p>
                 </div>
             </div>
         </section>
+
+        <section class="py-32 bg-stone-50 text-center relative border-t border-stone-200">
+            <div class="max-w-6xl mx-auto px-4">
+                <h3 class="text-sm font-mono text-stone-400 mb-8 uppercase tracking-[0.3em] font-bold">Cartography of Knowledge</h3>
+                <div id="heritage-map" style="height: 600px; width: 100%;" class="rounded-3xl border border-stone-200 shadow-xl z-10 relative bg-white"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-white py-16 border-t border-stone-200 text-center text-stone-400">
+        <p class="text-sm font-medium text-stone-900">Designed for the Indian Knowledge Systems Project.</p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        // 1. Reveal Animation
+        document.body.classList.add('js-loaded');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('active'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // 2. Icons
+        if(typeof lucide !== 'undefined') lucide.createIcons();
+
+        // 3. Solar Simulation
+        const solarSlider = document.getElementById('solarSlider');
+        const sunBeam = document.getElementById('sunBeam');
+        const solarLabel = document.getElementById('solarLabel');
+        const months = ["Dec (Winter Solstice)", "Jan", "Feb", "Mar (Equinox)", "Apr"];
+        if(solarSlider && sunBeam) {
+            solarSlider.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value);
+                sunBeam.style.left = `${10 + (val * 13.3)}%`;
+                solarLabel.innerText = months[val];
+            });
+        }
+
+        // 4. Fractal
+        const fractalTrigger = document.getElementById('fractalTrigger');
+        const fractalShape = document.getElementById('fractalShape');
+        const fractalText = document.getElementById('fractalText');
+        const fractalStats = document.getElementById('fractalStats');
+        let isStar = false;
+        if(fractalTrigger) {
+            fractalTrigger.addEventListener('click', () => {
+                isStar = !isStar;
+                if(isStar) {
+                    fractalShape.style.clipPath = "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)"; 
+                    fractalShape.style.backgroundColor = "#d97706"; 
+                    fractalText.innerText = "STELLATE"; fractalText.style.color = "white";
+                    fractalStats.style.opacity = "1"; fractalStats.innerHTML = '<span class="text-red-600 font-bold text-2xl">140%</span><span class="text-stone-400 text-xs uppercase ml-2">Surface Area</span>';
+                } else {
+                    fractalShape.style.clipPath = "none"; fractalShape.style.backgroundColor = "#e5e5e5";
+                    fractalText.innerText = "SQUARE"; fractalText.style.color = "#78716c";
+                    fractalStats.style.opacity = "0.5"; fractalStats.innerHTML = '<span class="text-stone-500 font-bold text-2xl">100%</span><span class="text-stone-400 text-xs uppercase ml-2">Surface Area</span>';
+                }
+            });
+        }
+
+        // 5. Lathe
+        const slider = document.getElementById('latheSlider');
+        const stone = document.getElementById('latheStone');
+        const shine = document.getElementById('latheShine');
+        const rpmLabel = document.getElementById('rpmLabel');
+        const successOverlay = document.getElementById('latheSuccess');
+        if(slider && stone) {
+            let rotation = 0; let speed = 0;
+            function animate() { rotation += speed; stone.style.transform = `rotate(${rotation}deg)`; requestAnimationFrame(animate); }
+            animate();
+            slider.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value); speed = val * 0.5; rpmLabel.innerText = Math.floor(val * 12.5) + " RPM";
+                const radius = 30 + (val * 0.2); const inverse = 100 - radius;
+                if(val < 98) {
+                    stone.style.borderRadius = `${radius}% ${inverse}% ${inverse}% ${radius}% / ${radius}% ${radius}% ${inverse}% ${inverse}%`;
+                    stone.classList.remove('bg-stone-800', 'shadow-2xl'); stone.classList.add('bg-stone-400');
+                    shine.style.opacity = '0'; successOverlay.style.opacity = '0';
+                } else {
+                    stone.style.borderRadius = "50%"; stone.classList.remove('bg-stone-400'); stone.classList.add('bg-stone-800', 'shadow-2xl');
+                    shine.style.opacity = '1'; successOverlay.style.opacity = '1';
+                }
+            });
+        }
+
+        // 6. Map
+        document.addEventListener('DOMContentLoaded', () => {
+            if(typeof L === 'undefined') return;
+            const map = L.map('heritage-map', { center: [14.5204, 75.7224], zoom: 7, scrollWheelZoom: false });
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap', subdomains: 'abcd', maxZoom: 19 }).addTo(map);
+            const sites = [
+                { name: "Bijapur", loc: [16.8302, 75.7100], desc: "Bhaskara II", type: "yellow" },
+                { name: "Hampi", loc: [15.3350, 76.4600], desc: "Hydraulics", type: "yellow" },
+                { name: "Balligavi", loc: [14.3996, 75.2325], desc: "Medicine", type: "red" },
+                { name: "Shringeri", loc: [13.4198, 75.2568], desc: "Solar Calendar", type: "yellow" },
+                { name: "Belur", loc: [13.1623, 75.8679], desc: "Lathe Tech", type: "yellow" },
+                { name: "Moodabidri", loc: [13.0690, 74.9984], desc: "Data Storage", type: "red" },
+                { name: "Bhatkal", loc: [13.9700, 74.5500], desc: "Trade Port", type: "yellow" },
+                { name: "Mangalore", loc: [12.9141, 74.8560], desc: "Silk Road", type: "yellow" }
+            ];
+            sites.forEach(site => {
+                const colorClass = site.type === 'yellow' ? 'marker-pin-yellow' : 'marker-pin-red';
+                const icon = L.divIcon({ className: 'custom-div-icon', html: `<div class="w-4 h-4 relative"><div class="${colorClass}"></div></div>`, iconSize: [16, 16], iconAnchor: [8, 8] });
+                L.marker(site.loc, {icon: icon}).addTo(map).bindPopup(`<strong class="text-sm font-bold text-${site.type === 'yellow' ? 'amber-600' : 'red-600'}">${site.name}</strong><br><span class="text-xs text-stone-500">${site.desc}</span>`);
+            });
+        });
+    </script>
+</body>
+</html>
