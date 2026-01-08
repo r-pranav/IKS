@@ -14,47 +14,43 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
     <style>
-        /* LIGHT THEME BASE */
+        /* BASE STYLES */
         body { font-family: 'Inter', sans-serif; background-color: #fafaf9; color: #1c1917; overflow-x: hidden; }
         h1, h2, h3, h4, h5 { font-family: 'Space Grotesk', sans-serif; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
         
-        /* Reveal Animation */
+        /* REVEAL ANIMATION */
         .reveal { opacity: 1; transform: translateY(0); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
         .js-loaded .reveal { opacity: 0; transform: translateY(40px); }
         .js-loaded .reveal.active { opacity: 1; transform: translateY(0); }
         
-        /* Glassmorphism */
+        /* GLASS EFFECTS */
         .glass { 
-            background: rgba(255, 255, 255, 0.8); 
-            backdrop-filter: blur(12px); 
-            border: 1px solid rgba(255, 255, 255, 0.5); 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(16px); 
+            border: 1px solid rgba(255, 255, 255, 0.6); 
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
         .glass-panel { 
-            background: rgba(255, 255, 255, 0.9); 
-            border: 1px solid #e7e5e4; 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.95); 
+            border: 1px solid #e5e5e5; 
+            box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.05);
         }
         
-        /* Image Masks & Overlays */
-        .img-mask { mask-image: linear-gradient(to bottom, black 50%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%); }
-        .img-mask-right { mask-image: linear-gradient(to right, black 50%, transparent 100%); -webkit-mask-image: linear-gradient(to right, black 50%, transparent 100%); }
-
-        /* Map Styles */
+        /* MAP STYLES */
         .leaflet-popup-content-wrapper { background: #ffffff; color: #1c1917; border-radius: 8px; font-family: 'JetBrains Mono', monospace; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #e5e5e5; }
         .leaflet-popup-tip { background: #ffffff; }
         .leaflet-container { font-family: 'Inter', sans-serif; background: #f5f5f4; }
         .leaflet-container img.leaflet-tile { max-width: none !important; width: auto !important; }
 
-        /* Markers */
+        /* MARKERS */
         .marker-pin-yellow { width: 16px; height: 16px; border-radius: 50%; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.7); animation: pulse-yellow 2s infinite; background: #d97706; border: 2px solid white; }
         .marker-pin-red { width: 16px; height: 16px; border-radius: 50%; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); animation: pulse-red 2s infinite; background: #b91c1c; border: 2px solid white; }
         
         @keyframes pulse-yellow { 0% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(217, 119, 6, 0); } 100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); } }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(185, 28, 28, 0); } 100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); } }
 
-        /* Custom Slider */
+        /* SLIDER & TOGGLES */
         input[type=range] { -webkit-appearance: none; background: transparent; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: #d97706; border: 3px solid #ffffff; cursor: pointer; margin-top: -10px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #e5e5e5; border-radius: 4px; }
@@ -62,29 +58,29 @@
 </head>
 <body class="antialiased selection:bg-amber-200 selection:text-amber-900">
 
-    <header class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-stone-50">
+    <header class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-stone-100">
         <div class="absolute inset-0 z-0">
-            <img src="https://images.unsplash.com/photo-1590050752117-238cb0fb9d26?q=80&w=2070&auto=format&fit=crop" 
-                 alt="Hampi Stone Chariot" 
-                 class="w-full h-full object-cover opacity-10 grayscale hover:grayscale-0 transition-all duration-[3s] hover:scale-105">
-            <div class="absolute inset-0 bg-gradient-to-t from-stone-50 via-stone-50/80 to-transparent"></div>
+            <img src="https://images.unsplash.com/photo-1605445272637-2a58d697330d?q=80&w=2070&auto=format&fit=crop" 
+                 alt="Indian Temple Architecture" 
+                 class="w-full h-full object-cover opacity-60 grayscale hover:grayscale-0 transition-all duration-[3s] hover:scale-105">
+            <div class="absolute inset-0 bg-gradient-to-t from-stone-50 via-stone-50/70 to-stone-50/30"></div>
         </div>
         
         <div class="z-10 text-center px-4 max-w-5xl mx-auto pt-20">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-200 bg-white/50 backdrop-blur-md text-amber-700 text-[10px] font-mono uppercase tracking-widest mb-8 reveal shadow-sm">
-                <span class="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></span>
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-amber-200 bg-white/80 backdrop-blur-md text-amber-700 text-[10px] font-mono uppercase tracking-widest mb-8 reveal shadow-lg">
+                <span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
                 Indian Knowledge Systems
             </div>
-            <h1 class="text-6xl md:text-[9rem] leading-none font-bold tracking-tighter mb-8 text-stone-900 reveal drop-shadow-sm mix-blend-multiply">
+            <h1 class="text-6xl md:text-[9rem] leading-none font-bold tracking-tighter mb-8 text-stone-900 reveal drop-shadow-xl mix-blend-multiply">
                 STONE<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-red-700">SCIENCE</span>
             </h1>
-            <p class="text-stone-600 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed reveal font-light">
+            <p class="text-stone-700 text-lg md:text-2xl max-w-2xl mx-auto leading-relaxed reveal font-medium">
                 Engineering the Divine: From the polymer-like properties of Soapstone to the calculus of the stars.
             </p>
         </div>
         
-        <div class="absolute bottom-10 animate-bounce opacity-40">
-            <i data-lucide="arrow-down" class="text-stone-900 w-6 h-6"></i>
+        <div class="absolute bottom-10 animate-bounce opacity-60">
+            <i data-lucide="arrow-down" class="text-stone-900 w-8 h-8"></i>
         </div>
     </header>
 
@@ -105,31 +101,21 @@
                                 <div class="text-stone-400">Property</div>
                                 <div class="text-stone-900 font-bold">Granite</div>
                                 <div class="text-amber-600 font-bold">Soapstone</div>
-                                
-                                <div>Hardness</div>
-                                <div>6-7 (Hard)</div>
-                                <div>1-2 (Soft)</div>
-                                
-                                <div>Detailing</div>
-                                <div>Low Res</div>
-                                <div>High Precision</div>
+                                <div>Hardness</div><div>6-7 (Hard)</div><div>1-2 (Soft)</div>
+                                <div>Detailing</div><div>Low Res</div><div>High Precision</div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="group relative rounded-3xl overflow-hidden aspect-square shadow-2xl reveal hover:rotate-1 transition duration-700">
+                    <div class="group relative rounded-3xl overflow-hidden aspect-square shadow-2xl reveal hover:rotate-1 transition duration-700 bg-stone-200">
                         <img src="https://images.unsplash.com/photo-1627894483216-2138af692e32?q=80&w=2000&auto=format&fit=crop" 
                              class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                              alt="Intricate Stone Carving">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
                         <div class="absolute bottom-8 left-8 text-white">
                             <div class="text-xs font-mono text-amber-400 uppercase font-bold mb-1">Visual Evidence</div>
-                            <div class="text-2xl font-bold">Lace-like Detailing</div>
-                            <p class="text-xs text-gray-300 mt-2 opacity-80">Impossible with standard granite tools.</p>
-                        </div>
-                        
-                        <div class="absolute top-8 right-8 w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30">
-                            <i data-lucide="layers" class="text-white"></i>
+                            <div class="text-3xl font-bold">Lace-like Detailing</div>
+                            <p class="text-sm text-gray-300 mt-2 opacity-90">Impossible with standard granite tools.</p>
                         </div>
                     </div>
                 </div>
@@ -188,14 +174,15 @@
         </section>
 
         <section class="py-32 px-6 bg-stone-900 border-t border-stone-800 select-none relative overflow-hidden text-white">
-            <img src="https://images.unsplash.com/photo-1643285744275-92762394c503?q=80&w=2070&auto=format&fit=crop" 
-                 class="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-overlay">
-            <div class="absolute inset-0 bg-gradient-to-t from-stone-900 via-stone-900/50 to-transparent"></div>
+            <img src="https://images.unsplash.com/photo-1582555554332-9c2937320023?q=80&w=2070&auto=format&fit=crop" 
+                 class="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay"
+                 alt="Indian Temple Pillar">
+            <div class="absolute inset-0 bg-gradient-to-t from-stone-900 via-stone-900/60 to-transparent"></div>
 
             <div class="max-w-4xl mx-auto text-center relative z-10">
                 <span class="text-amber-500 text-xs font-mono uppercase tracking-widest font-bold">03 • Astronomical Architecture</span>
                 <h3 class="text-4xl font-bold mt-4 mb-6 text-white">The Solar Calendar</h3>
-                <p class="text-stone-400 mb-12">
+                <p class="text-stone-300 mb-12 text-lg">
                     The Shringeri Vidya Shankara temple is designed so that sunlight hits specific pillars during solstices and equinoxes.
                 </p>
 
@@ -215,9 +202,9 @@
 
                     <div class="relative z-20 px-8">
                         <div class="flex justify-between text-xs font-mono text-stone-400 mb-4 uppercase">
-                            <span>Winter</span>
+                            <span>Winter Solstice</span>
                             <span id="solarLabel" class="text-amber-400 font-bold">December</span>
-                            <span>Summer</span>
+                            <span>Summer Solstice</span>
                         </div>
                         <input type="range" min="0" max="6" value="0" id="solarSlider" class="w-full">
                     </div>
@@ -228,9 +215,9 @@
         <section class="py-32 px-6 bg-white border-t border-stone-200">
             <div class="max-w-7xl mx-auto">
                 <div class="grid md:grid-cols-2 gap-16 items-center">
-                    <div class="order-2 md:order-1 relative h-[500px] rounded-3xl overflow-hidden shadow-2xl reveal group">
-                        <img src="https://images.unsplash.com/photo-1597648342893-b292bd278941?q=80&w=1000&auto=format&fit=crop" 
-                             alt="Hampi Stepwell" 
+                    <div class="order-2 md:order-1 relative h-[500px] rounded-3xl overflow-hidden shadow-2xl reveal group bg-stone-200">
+                        <img src="https://images.unsplash.com/photo-1600100598379-99fdddb79a61?q=80&w=1000&auto=format&fit=crop" 
+                             alt="Hampi Stepwell Geometry" 
                              class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
                         <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
                         
@@ -238,6 +225,7 @@
                             <div class="p-3 bg-white/20 backdrop-blur-md rounded-xl inline-flex text-white border border-white/30">
                                 <i data-lucide="droplets" class="w-6 h-6"></i>
                             </div>
+                            <div class="mt-4 text-white font-bold text-xl">Geometric Precision</div>
                         </div>
                     </div>
                     
@@ -338,7 +326,7 @@
                             The Jain Basadis of Moodabidri functioned as data centers. They engineered <strong>Talegari</strong> (processed palm leaves), creating archival material that resisted rot and termites for centuries.
                         </p>
                         
-                        <div class="rounded-2xl overflow-hidden h-48 relative shadow-lg">
+                        <div class="rounded-2xl overflow-hidden h-48 relative shadow-lg bg-stone-200">
                             <img src="https://images.unsplash.com/photo-1605218457316-2e86d0e340b3?q=80&w=1000&auto=format&fit=crop" 
                                  class="w-full h-full object-cover opacity-80" alt="Ancient Manuscript">
                             <div class="absolute inset-0 bg-amber-900/10"></div>
